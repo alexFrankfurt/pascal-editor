@@ -1,10 +1,17 @@
 'use client'
 
-import { type AnyNode, getScaledDimensions, ItemNode, useScene } from '@pascal-app/core'
+import {
+  type AnyNode,
+  getInventory,
+  getScaledDimensions,
+  ItemNode,
+  useScene,
+} from '@pascal-app/core'
 import {
   ActionButton,
   ActionGroup,
   CollectionsPopover,
+  InventoryDialog,
   PanelSection,
   PanelWrapper,
   SliderControl,
@@ -12,7 +19,7 @@ import {
   useEditor,
 } from '@pascal-app/editor'
 import { useViewer } from '@pascal-app/viewer'
-import { Copy, Link, Link2Off, Move, Trash2 } from 'lucide-react'
+import { Copy, Link, Link2Off, Move, Package, Trash2 } from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
 
 /**
@@ -40,6 +47,7 @@ export default function ItemPanel() {
   )
 
   const [uniformScale, setUniformScale] = useState(true)
+  const [inventoryOpen, setInventoryOpen] = useState(false)
   const nodeRef = useRef(node)
   nodeRef.current = node
 
@@ -305,6 +313,25 @@ export default function ItemPanel() {
             <ActionButton label="Manage collections…" />
           </CollectionsPopover>
         </ActionGroup>
+      </PanelSection>
+
+      <PanelSection title="Inventory">
+        <ActionGroup>
+          <ActionButton
+            icon={<Package className="h-3.5 w-3.5" />}
+            label={(() => {
+              const count = getInventory(node).items.length
+              return count > 0 ? `Open inventory (${count})` : 'Open inventory'
+            })()}
+            onClick={() => setInventoryOpen(true)}
+          />
+        </ActionGroup>
+        <InventoryDialog
+          nodeId={selectedId}
+          nodeName={node.name || node.asset.name}
+          onOpenChange={setInventoryOpen}
+          open={inventoryOpen}
+        />
       </PanelSection>
 
       <PanelSection title="Actions">

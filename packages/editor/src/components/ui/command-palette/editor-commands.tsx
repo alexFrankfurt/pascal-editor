@@ -27,6 +27,7 @@ import {
   PencilLine,
   Plus,
   Redo2,
+  Search,
   Square,
   SquareStack,
   Sun,
@@ -308,6 +309,17 @@ export function EditorCommands() {
       },
 
       // ── View ─────────────────────────────────────────────────────────────
+      {
+        id: 'editor.find-in-scene',
+        label: 'Find in Inventory',
+        group: 'View',
+        icon: <Search className="h-4 w-4" />,
+        keywords: ['search', 'find', 'inventory', 'item', 'object', 'locate', 'node'],
+        execute: () => {
+          setOpen(true)
+          navigateTo('find-in-scene')
+        },
+      },
       {
         id: 'editor.view.preview',
         label: () => (isPreviewMode ? 'Exit Preview' : 'Enter Preview'),

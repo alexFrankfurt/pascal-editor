@@ -1,7 +1,7 @@
 'use client'
 
 import { Icon as IconifyIcon } from '@iconify/react'
-import { useEditor, useSidebarStore, type ViewMode } from '@pascal-app/editor'
+import { useCommandPalette, useEditor, useSidebarStore, type ViewMode } from '@pascal-app/editor'
 import { useViewer } from '@pascal-app/viewer'
 import {
   ChevronsLeft,
@@ -12,6 +12,7 @@ import {
   Footprints,
   Grid2X2,
   Moon,
+  Search,
   Sun,
 } from 'lucide-react'
 import Image from 'next/image'
@@ -320,6 +321,25 @@ function WalkthroughButton() {
   )
 }
 
+function SearchButton() {
+  const { setOpen, navigateTo } = useCommandPalette()
+
+  return (
+    <ToolbarTooltip label="Find in Inventory">
+      <button
+        className={TOOLBAR_BTN}
+        onClick={() => {
+          setOpen(true)
+          navigateTo('find-in-scene')
+        }}
+        type="button"
+      >
+        <Search className="h-4 w-4" />
+      </button>
+    </ToolbarTooltip>
+  )
+}
+
 function PreviewButton() {
   return (
     <ToolbarTooltip label="Preview mode">
@@ -347,6 +367,8 @@ export function CommunityViewerToolbarLeft() {
 export function CommunityViewerToolbarRight() {
   return (
     <div className={TOOLBAR_CONTAINER}>
+      <SearchButton />
+      <div className="my-1.5 w-px bg-border/50" />
       <LevelModeToggle />
       <WallModeToggle />
       <GridVisibilityToggle />

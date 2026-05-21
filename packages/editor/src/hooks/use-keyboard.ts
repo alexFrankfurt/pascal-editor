@@ -1,6 +1,7 @@
 import { type AnyNodeId, emitter, useScene } from '@pascal-app/core'
 import { useViewer } from '@pascal-app/viewer'
 import { useEffect } from 'react'
+import { useCommandPalette } from '../components/ui/command-palette'
 import { closeDoorOpenState, toggleDoorOpenState } from '../lib/door-interaction'
 import { runRedo, runUndo } from '../lib/history'
 import {
@@ -76,6 +77,10 @@ export const useKeyboard = ({
         e.preventDefault()
         useEditor.getState().setPhase('furnish')
         useEditor.getState().setMode('select')
+      } else if (e.key === 'f' && (e.metaKey || e.ctrlKey) && e.shiftKey) {
+        e.preventDefault()
+        useCommandPalette.getState().setOpen(true)
+        useCommandPalette.getState().navigateTo('find-in-scene')
       } else if (e.key === 'f' && !e.metaKey && !e.ctrlKey) {
         if (isVersionPreviewMode) return
         e.preventDefault()

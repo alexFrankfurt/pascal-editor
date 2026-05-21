@@ -41,6 +41,7 @@ import { ToolManager } from '../tools/tool-manager'
 import { ActionMenu } from '../ui/action-menu'
 import { CommandPalette, type CommandPaletteEmptyAction } from '../ui/command-palette'
 import { EditorCommands } from '../ui/command-palette/editor-commands'
+import { FindInSceneRegister } from '../ui/command-palette/find-in-scene'
 import { FloatingLevelSelector } from '../ui/floating-level-selector'
 import { HelperManager } from '../ui/helpers/helper-manager'
 import { PanelManager } from '../ui/panels/panel-manager'
@@ -1175,6 +1176,7 @@ export default function Editor({
               viewerToolbarRight={viewerToolbarRight}
             />
             <EditorCommands />
+            <FindInSceneRegister />
             <CommandPalette emptyAction={commandPaletteEmptyAction} />
           </>
         )}

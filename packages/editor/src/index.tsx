@@ -99,6 +99,7 @@ export { SegmentedControl } from './components/ui/controls/segmented-control'
 export { SliderControl } from './components/ui/controls/slider-control'
 export { ToggleControl } from './components/ui/controls/toggle-control'
 export { FloatingLevelSelector } from './components/ui/floating-level-selector'
+export { InventoryDialog } from './components/ui/inventory-dialog'
 export { CATALOG_ITEMS } from './components/ui/item-catalog/catalog-items'
 // Item collections UI — used by the kind-owned ItemPanel in nodes/.
 export { CollectionsPopover } from './components/ui/panels/collections/collections-popover'
