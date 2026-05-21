@@ -1,3 +1,7 @@
+# Fork
+
+Adds inventory view for containers such as closet, table.
+
 # Pascal Editor
 
 A 3D building editor built with React Three Fiber and WebGPU.
