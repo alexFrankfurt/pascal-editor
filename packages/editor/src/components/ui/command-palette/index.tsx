@@ -5,6 +5,7 @@ import { useScene } from '@pascal-app/core'
 import { useViewer } from '@pascal-app/viewer'
 import { Command, useCommandState } from 'cmdk'
 import { ChevronRight, Search } from 'lucide-react'
+import { cn } from '../../../lib/utils'
 import type { ReactNode } from 'react'
 import { useEffect, useState } from 'react'
 import { create } from 'zustand'
@@ -290,7 +291,7 @@ export function CommandPalette({ emptyAction }: { emptyAction?: CommandPaletteEm
 
   return (
     <Dialog onOpenChange={setOpen} open={open}>
-      <DialogContent className="max-w-lg gap-0 overflow-hidden p-0" showCloseButton={false}>
+      <DialogContent className={cn('gap-0 overflow-hidden p-0', page ? 'sm:max-w-4xl' : 'max-w-lg')} showCloseButton={false}>
         <DialogTitle className="sr-only">Command Palette</DialogTitle>
 
         {modeView && <modeView.Component onBack={onBack} onClose={onClose} />}
@@ -334,12 +335,17 @@ export function CommandPalette({ emptyAction }: { emptyAction?: CommandPaletteEm
             </div>
 
             <Command.List className="max-h-100 overflow-y-auto p-1.5">
-              {(!emptyAction || page) && (
-                <Command.Empty className="py-8 text-center text-muted-foreground text-sm">
-                  No commands found.
-                </Command.Empty>
+              {!page && (
+                <>
+                  {emptyAction ? (
+                    <EmptyActionItem action={emptyAction} />
+                  ) : (
+                    <Command.Empty className="py-8 text-center text-muted-foreground text-sm">
+                      No commands found.
+                    </Command.Empty>
+                  )}
+                </>
               )}
-              {emptyAction && !page && <EmptyActionItem action={emptyAction} />}
 
               {/* ── Registered page view (e.g. 'ai') ─────────────────────── */}
               {page &&

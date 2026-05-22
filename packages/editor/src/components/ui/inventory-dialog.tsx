@@ -7,8 +7,19 @@ import {
   type InventoryItem,
   type AnyNode,
   useScene,
+  emitter,
 } from '@pascal-app/core'
-import { ImagePlus, Package, Pencil, Plus, Trash2, X } from 'lucide-react'
+import {
+  ImagePlus,
+  Package,
+  Pencil,
+  Plus,
+  Trash2,
+  X,
+  LayoutGrid,
+  List,
+  Crosshair,
+} from 'lucide-react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { Button } from './primitives/button'
 import {
@@ -19,6 +30,8 @@ import {
   DialogTitle,
 } from './primitives/dialog'
 import { Input } from './primitives/input'
+import { InventoryGallery } from './inventory-gallery'
+import { cn } from '../../lib/utils'
 
 interface InventoryDialogProps {
   open: boolean
@@ -45,7 +58,6 @@ function useImageFilePicker(onImageLoaded: (dataUrl: string) => void) {
         }
       }
       reader.readAsDataURL(file)
-      // reset so the same file can be selected again
       e.target.value = ''
     },
     [onImageLoaded],
@@ -98,11 +110,7 @@ function InventoryItemForm({
 
       {imageUrl ? (
         <div className="relative self-start">
-          <img
-            alt="Preview"
-            className="h-20 w-20 rounded-md object-cover"
-            src={imageUrl}
-          />
+          <img alt="Preview" className="h-20 w-20 rounded-md object-cover" src={imageUrl} />
           <button
             className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white"
             onClick={() => setImageUrl('')}
@@ -129,11 +137,7 @@ function InventoryItemForm({
         type="file"
       />
 
-      <Input
-        placeholder="Name *"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
+      <Input placeholder="Name *" value={name} onChange={(e) => setName(e.target.value)} />
       <Input
         placeholder="Description"
         value={description}
@@ -155,12 +159,7 @@ function InventoryItemForm({
           onChange={(e) => setQuantity(e.target.value)}
         />
       </div>
-      <Button
-        className="mt-1 w-full"
-        disabled={!name.trim()}
-        onClick={handleSave}
-        size="sm"
-      >
+      <Button className="mt-1 w-full" disabled={!name.trim()} onClick={handleSave} size="sm">
         {initial ? 'Save changes' : 'Add item'}
       </Button>
     </div>
@@ -199,9 +198,7 @@ function InventoryItemCard({
           )}
         </div>
         {item.description && (
-          <p className="mt-1 line-clamp-2 text-muted-foreground text-xs">
-            {item.description}
-          </p>
+          <p className="mt-1 line-clamp-2 text-muted-foreground text-xs">{item.description}</p>
         )}
       </div>
       <div className="flex shrink-0 flex-col gap-1">
@@ -237,6 +234,7 @@ export function InventoryDialog({
 
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isAdding, setIsAdding] = useState(false)
+  const [viewMode, setViewMode] = useState<'list' | 'gallery'>('list')
 
   const resetDraft = useCallback(() => {
     setIsAdding(false)
@@ -260,11 +258,7 @@ export function InventoryDialog({
     (id: string, draft: Omit<InventoryItem, 'id'>) => {
       if (!node || !nodeId) return
       const patch = buildInventoryPatch(node, (data) => ({
-        items: data.items.map((i) =>
-          i.id === id
-            ? { ...i, ...draft }
-            : i,
-        ),
+        items: data.items.map((i) => (i.id === id ? { ...i, ...draft } : i)),
       }))
       useScene.getState().updateNode(nodeId as AnyNode['id'], patch)
       resetDraft()
@@ -284,52 +278,111 @@ export function InventoryDialog({
     [node, nodeId, editingId],
   )
 
+  const handleFocusNode = useCallback(() => {
+    if (!nodeId) return
+    onOpenChange(false)
+    emitter.emit('camera-controls:focus', { nodeId: nodeId as AnyNode['id'] })
+  }, [nodeId, onOpenChange])
+
   const editingItem = useMemo(
     () => inventory.items.find((i) => i.id === editingId),
     [inventory.items, editingId],
   )
 
+  const galleryItems = useMemo(
+    () => inventory.items.map((item) => ({ item, node: node ?? undefined })),
+    [inventory.items, node],
+  )
+
+  const dialogClass = viewMode === 'gallery'
+    ? 'sm:max-w-7xl w-[95vw] max-h-[92vh] flex flex-col'
+    : 'sm:max-w-lg'
+
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="sm:max-w-lg" showCloseButton>
-        <DialogHeader>
-          <DialogTitle>Inventory{nodeName ? `: ${nodeName}` : ''}</DialogTitle>
-          <DialogDescription>Manage items stored inside this container.</DialogDescription>
+      <DialogContent className={dialogClass} showCloseButton>
+        <DialogHeader className="shrink-0">
+          <div className="flex items-center justify-between">
+            <div>
+              <DialogTitle>Inventory{nodeName ? `: ${nodeName}` : ''}</DialogTitle>
+              <DialogDescription>Manage items stored inside this container.</DialogDescription>
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                className={cn(
+                  'rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent',
+                  viewMode === 'list' && 'bg-accent text-foreground',
+                )}
+                onClick={() => setViewMode('list')}
+                title="List view"
+                type="button"
+              >
+                <List className="h-4 w-4" />
+              </button>
+              <button
+                className={cn(
+                  'rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent',
+                  viewMode === 'gallery' && 'bg-accent text-foreground',
+                )}
+                onClick={() => setViewMode('gallery')}
+                title="Gallery view"
+                type="button"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </button>
+              <div className="mx-1 h-4 w-px bg-border" />
+              <button
+                className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                onClick={handleFocusNode}
+                title="Focus container in 3D view"
+                type="button"
+              >
+                <Crosshair className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
         </DialogHeader>
 
-        <div className="flex max-h-[50vh] flex-col gap-3 overflow-y-auto py-2">
-          {inventory.items.length === 0 && !isAdding && (
-            <div className="flex flex-col items-center justify-center gap-2 py-8 text-muted-foreground">
-              <Package className="h-8 w-8 opacity-40" />
-              <p className="text-sm">No items in this container yet.</p>
-            </div>
-          )}
+        {viewMode === 'gallery' ? (
+          <div className="flex-1 overflow-y-auto py-2">
+            <InventoryGallery
+              emptyMessage="No items in this container yet."
+              items={galleryItems}
+            />
+          </div>
+        ) : (
+          <div className="flex max-h-[50vh] flex-col gap-3 overflow-y-auto py-2">
+            {inventory.items.length === 0 && !isAdding && (
+              <div className="flex flex-col items-center justify-center gap-2 py-8 text-muted-foreground">
+                <Package className="h-8 w-8 opacity-40" />
+                <p className="text-sm">No items in this container yet.</p>
+              </div>
+            )}
 
-          {inventory.items.map((item) =>
-            editingId === item.id ? (
-              <InventoryItemForm
-                initial={item}
-                key={item.id}
-                onCancel={resetDraft}
-                onSave={(draft) => handleUpdate(item.id, draft)}
-              />
-            ) : (
-              <InventoryItemCard
-                item={item}
-                key={item.id}
-                onDelete={handleDelete}
-                onEdit={() => {
-                  setIsAdding(false)
-                  setEditingId(item.id)
-                }}
-              />
-            ),
-          )}
+            {inventory.items.map((item) =>
+              editingId === item.id ? (
+                <InventoryItemForm
+                  initial={item}
+                  key={item.id}
+                  onCancel={resetDraft}
+                  onSave={(draft) => handleUpdate(item.id, draft)}
+                />
+              ) : (
+                <InventoryItemCard
+                  item={item}
+                  key={item.id}
+                  onDelete={handleDelete}
+                  onEdit={() => {
+                    setIsAdding(false)
+                    setEditingId(item.id)
+                  }}
+                />
+              ),
+            )}
 
-          {isAdding && (
-            <InventoryItemForm onCancel={resetDraft} onSave={handleAdd} />
-          )}
-        </div>
+            {isAdding && <InventoryItemForm onCancel={resetDraft} onSave={handleAdd} />}
+          </div>
+        )}
 
         {!isAdding && !editingId && (
           <div className="flex justify-end pt-2">
